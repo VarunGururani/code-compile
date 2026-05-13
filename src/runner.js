@@ -1,16 +1,15 @@
 // Code execution client.
 //
-// Uses the free CodeX API (https://github.com/Jaagrav/CodeX) which runs
-// each submission in an isolated Docker container on the server side.
-// No API key, no signup, no setup.
+// In dev, requests go to /api/run which Vite proxies to
+// https://api.codex.jaagrav.in (see vite.config.js). The proxy avoids
+// browser CORS issues when the upstream API does not send the right headers.
 //
-// You can override the endpoint at build time with:
-//   VITE_EXECUTION_API_URL=https://your-self-hosted-instance
+// You can override the URL with VITE_EXECUTION_API_URL (e.g. point it at
+// your own self-hosted CodeX or Piston instance).
 
 import axios from 'axios';
 
-const DEFAULT_API = 'https://api.codex.jaagrav.in';
-const API_URL = import.meta.env.VITE_EXECUTION_API_URL || DEFAULT_API;
+const API_URL = import.meta.env.VITE_EXECUTION_API_URL || '/api/run';
 
 export async function runCode(language, source, stdin) {
   if (!language.codex) {
@@ -43,7 +42,9 @@ export async function runCode(language, source, stdin) {
       throw new Error(`Backend returned ${err.response.status}: ${msg}`);
     }
     throw new Error(
-      `Network error: ${err.message}. Check your internet connection.`,
+      `Network error: ${err.message}. ` +
+        'Make sure the dev server is running (npm run dev) ' +
+        'so the /api/run proxy is active.',
     );
   }
 
