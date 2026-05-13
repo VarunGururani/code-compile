@@ -1,13 +1,14 @@
-// Language catalogue with starter templates and CodeX API metadata.
-// CodeX (https://github.com/Jaagrav/CodeX) is a free public code execution API
-// that runs each submission inside an isolated Docker container. No API key.
+// Language catalogue with starter templates and JDoodle API metadata.
+// JDoodle (https://www.jdoodle.com/compiler-api) is a reliable code
+// execution API. Free tier: 200 calls/day. Requires a free signup
+// to obtain JDOODLE_CLIENT_ID and JDOODLE_CLIENT_SECRET.
 
 export const LANGUAGES = {
   javascript: {
     id: 'javascript',
     label: 'JavaScript (Node)',
     monaco: 'javascript',
-    codex: 'js',
+    jdoodle: { language: 'nodejs', versionIndex: '4' },
     template: `// Welcome to the Online Code Compiler
 function greet(name) {
   return \`Hello, \${name}! Welcome to the playground.\`;
@@ -21,7 +22,7 @@ console.log("2 + 2 =", 2 + 2);
     id: 'python',
     label: 'Python 3',
     monaco: 'python',
-    codex: 'py',
+    jdoodle: { language: 'python3', versionIndex: '4' },
     template: `# Python 3
 def greet(name):
     return f"Hello, {name}!"
@@ -34,7 +35,7 @@ print("Sum:", sum(range(1, 11)))
     id: 'java',
     label: 'Java',
     monaco: 'java',
-    codex: 'java',
+    jdoodle: { language: 'java', versionIndex: '4' },
     template: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, Developer!");
@@ -46,7 +47,7 @@ print("Sum:", sum(range(1, 11)))
     id: 'cpp',
     label: 'C++ (GCC)',
     monaco: 'cpp',
-    codex: 'cpp',
+    jdoodle: { language: 'cpp17', versionIndex: '0' },
     template: `#include <iostream>
 using namespace std;
 
@@ -60,7 +61,7 @@ int main() {
     id: 'c',
     label: 'C (GCC)',
     monaco: 'c',
-    codex: 'c',
+    jdoodle: { language: 'c', versionIndex: '5' },
     template: `#include <stdio.h>
 
 int main(void) {
@@ -73,7 +74,7 @@ int main(void) {
     id: 'csharp',
     label: 'C#',
     monaco: 'csharp',
-    codex: 'cs',
+    jdoodle: { language: 'csharp', versionIndex: '4' },
     template: `using System;
 
 class Program {
@@ -87,7 +88,7 @@ class Program {
     id: 'go',
     label: 'Go',
     monaco: 'go',
-    codex: 'go',
+    jdoodle: { language: 'go', versionIndex: '4' },
     template: `package main
 
 import "fmt"
@@ -95,6 +96,30 @@ import "fmt"
 func main() {
     fmt.Println("Hello, Developer!")
 }
+`,
+  },
+  ruby: {
+    id: 'ruby',
+    label: 'Ruby',
+    monaco: 'ruby',
+    jdoodle: { language: 'ruby', versionIndex: '4' },
+    template: `def greet(name)
+  "Hello, #{name}!"
+end
+
+puts greet("Developer")
+`,
+  },
+  php: {
+    id: 'php',
+    label: 'PHP',
+    monaco: 'php',
+    jdoodle: { language: 'php', versionIndex: '4' },
+    template: `<?php
+function greet($name) {
+    return "Hello, $name!";
+}
+echo greet("Developer") . PHP_EOL;
 `,
   },
 };
@@ -109,4 +134,6 @@ export const FILE_EXTENSIONS = {
   c: 'c',
   csharp: 'cs',
   go: 'go',
+  ruby: 'rb',
+  php: 'php',
 };
