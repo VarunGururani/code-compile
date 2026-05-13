@@ -1,0 +1,22 @@
+{
+  "name": "online-code-compiler",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Online Code Execution Platform - browser-based multi-language code compiler built with React.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "axios": "^1.7.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^5.4.10"
+  }
+}
