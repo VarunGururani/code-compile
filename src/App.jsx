@@ -2,9 +2,9 @@ import Editor from '@monaco-editor/react';
 import { useCallback, useEffect, useState } from 'react';
 
 import Header from './components/Header';
+import { ClockIcon, CodeIcon, InfoIcon } from './components/Icons';
 import LanguageSelect from './components/LanguageSelect';
-import OutputPanel from './components/OutputPanel';
-import StdinPanel from './components/StdinPanel';
+import SidePane from './components/SidePane';
 import Toolbar from './components/Toolbar';
 import { FILE_EXTENSIONS, LANGUAGES } from './languages';
 import { runCode } from './runner';
@@ -41,9 +41,11 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState(null);
+  const [cursorPos, setCursorPos] = useState({ line: 1, column: 1 });
 
   const langDef = LANGUAGES[language];
 
+  // Persist state
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.language, language);
   }, [language]);
@@ -104,6 +106,16 @@ export default function App() {
     URL.revokeObjectURL(url);
   }, [code, language]);
 
+  const handleEditorMount = useCallback((editor) => {
+    editor.onDidChangeCursorPosition((e) => {
+      setCursorPos({
+        line: e.position.lineNumber,
+        column: e.position.column,
+      });
+    });
+  }, []);
+
+  // Ctrl/Cmd+Enter to run
   useEffect(() => {
     const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -114,6 +126,9 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [handleRun, running]);
+
+  const lineCount = code.split('\n').length;
+  const charCount = code.length;
 
   return (
     <div className="app" data-theme={theme}>
@@ -145,8 +160,12 @@ export default function App() {
               theme={theme === 'dark' ? 'vs-dark' : 'vs'}
               value={code}
               onChange={(v) => setCode(v ?? '')}
+              onMount={handleEditorMount}
               options={{
                 fontSize: 14,
+                fontFamily:
+                  "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontLigatures: false,
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
@@ -154,22 +173,61 @@ export default function App() {
                 wordWrap: 'on',
                 renderLineHighlight: 'all',
                 smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                padding: { top: 14, bottom: 14 },
+                roundedSelection: true,
+                scrollbar: {
+                  verticalScrollbarSize: 10,
+                  horizontalScrollbarSize: 10,
+                },
               }}
             />
           </div>
         </section>
 
         <aside className="side-panel">
-          <StdinPanel value={stdin} onChange={setStdin} />
-          <OutputPanel result={result} running={running} error={error} />
+          <SidePane
+            stdin={stdin}
+            onStdinChange={setStdin}
+            result={result}
+            running={running}
+            error={error}
+          />
         </aside>
       </main>
 
-      <footer className="app-footer">
-        <span>
-          Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run. Code is executed in
-          isolated Docker sandboxes on the server.
-        </span>
+      <footer className="status-bar">
+        <div className="status-bar-group">
+          <span className="status-bar-item">
+            <CodeIcon />
+            {langDef.label}
+          </span>
+          <span className="status-bar-divider" />
+          <span className="status-bar-item">
+            Ln {cursorPos.line}, Col {cursorPos.column}
+          </span>
+          <span className="status-bar-divider" />
+          <span className="status-bar-item">
+            {lineCount} lines · {charCount} chars
+          </span>
+          {result && (
+            <>
+              <span className="status-bar-divider" />
+              <span className="status-bar-item">
+                <ClockIcon />
+                {result.timeMs} ms
+              </span>
+            </>
+          )}
+        </div>
+
+        <div className="status-bar-group">
+          <span className="status-bar-item">
+            <InfoIcon />
+            Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run
+          </span>
+        </div>
       </footer>
     </div>
   );
