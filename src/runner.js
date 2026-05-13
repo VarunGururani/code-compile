@@ -1,18 +1,15 @@
 // Code execution client.
 //
-// In dev, requests go to /api/run which Vite proxies to
-// https://api.codex.jaagrav.in (see vite.config.js). The proxy avoids
-// browser CORS issues when the upstream API does not send the right headers.
-//
-// You can override the URL with VITE_EXECUTION_API_URL (e.g. point it at
-// your own self-hosted CodeX or Piston instance).
+// Talks to JDoodle's compiler API via a Vite dev proxy at /api/run.
+// The proxy (vite.config.js) injects JDOODLE_CLIENT_ID and
+// JDOODLE_CLIENT_SECRET server-side so they never enter the browser bundle.
 
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_EXECUTION_API_URL || '/api/run';
 
 export async function runCode(language, source, stdin) {
-  if (!language.codex) {
+  if (!language.jdoodle) {
     throw new Error(`Language "${language.label}" is not supported.`);
   }
 
@@ -23,9 +20,10 @@ export async function runCode(language, source, stdin) {
     const response = await axios.post(
       API_URL,
       {
-        code: source,
-        language: language.codex,
-        input: stdin || '',
+        script: source,
+        stdin: stdin || '',
+        language: language.jdoodle.language,
+        versionIndex: language.jdoodle.versionIndex,
       },
       {
         timeout: 30000,
@@ -48,15 +46,19 @@ export async function runCode(language, source, stdin) {
     );
   }
 
-  // CodeX returns: { output, error, language, info, timeStamp }
-  const stdout = (data.output || '').toString();
-  const stderr = (data.error || '').toString();
-  const hasError = Boolean(stderr) && stderr.trim().length > 0;
+  // JDoodle response shape: { output, statusCode, memory, cpuTime, error? }
+  // statusCode 200 = success. Anything else = JDoodle-side error.
+  if (data?.error) {
+    throw new Error(`JDoodle error: ${data.error}`);
+  }
+
+  const stdout = (data?.output ?? '').toString();
+  const isError = data?.statusCode && data.statusCode !== 200;
 
   return {
-    stdout,
-    stderr,
-    status: hasError ? 'error' : 'success',
+    stdout: isError ? '' : stdout,
+    stderr: isError ? stdout : '',
+    status: isError ? 'error' : 'success',
     timeMs: Math.round(performance.now() - started),
   };
 }
