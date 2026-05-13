@@ -1,13 +1,13 @@
-// Language catalogue with starter templates and Piston language metadata.
-// Piston (https://emkc.org/api/v2/piston) is a free public API that runs code
-// inside isolated Docker containers - we just call it from the frontend.
+// Language catalogue with starter templates and CodeX API metadata.
+// CodeX (https://github.com/Jaagrav/CodeX) is a free public code execution API
+// that runs each submission inside an isolated Docker container. No API key.
 
 export const LANGUAGES = {
   javascript: {
     id: 'javascript',
     label: 'JavaScript (Node)',
     monaco: 'javascript',
-    piston: { language: 'javascript', version: '18.15.0' },
+    codex: 'js',
     template: `// Welcome to the Online Code Compiler
 function greet(name) {
   return \`Hello, \${name}! Welcome to the playground.\`;
@@ -21,7 +21,7 @@ console.log("2 + 2 =", 2 + 2);
     id: 'python',
     label: 'Python 3',
     monaco: 'python',
-    piston: { language: 'python', version: '3.10.0' },
+    codex: 'py',
     template: `# Python 3
 def greet(name):
     return f"Hello, {name}!"
@@ -34,7 +34,7 @@ print("Sum:", sum(range(1, 11)))
     id: 'java',
     label: 'Java',
     monaco: 'java',
-    piston: { language: 'java', version: '15.0.2' },
+    codex: 'java',
     template: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, Developer!");
@@ -46,7 +46,7 @@ print("Sum:", sum(range(1, 11)))
     id: 'cpp',
     label: 'C++ (GCC)',
     monaco: 'cpp',
-    piston: { language: 'c++', version: '10.2.0' },
+    codex: 'cpp',
     template: `#include <iostream>
 using namespace std;
 
@@ -60,7 +60,7 @@ int main() {
     id: 'c',
     label: 'C (GCC)',
     monaco: 'c',
-    piston: { language: 'c', version: '10.2.0' },
+    codex: 'c',
     template: `#include <stdio.h>
 
 int main(void) {
@@ -73,7 +73,7 @@ int main(void) {
     id: 'csharp',
     label: 'C#',
     monaco: 'csharp',
-    piston: { language: 'csharp.net', version: '5.0.201' },
+    codex: 'cs',
     template: `using System;
 
 class Program {
@@ -87,7 +87,7 @@ class Program {
     id: 'go',
     label: 'Go',
     monaco: 'go',
-    piston: { language: 'go', version: '1.16.2' },
+    codex: 'go',
     template: `package main
 
 import "fmt"
@@ -97,55 +97,16 @@ func main() {
 }
 `,
   },
-  ruby: {
-    id: 'ruby',
-    label: 'Ruby',
-    monaco: 'ruby',
-    piston: { language: 'ruby', version: '3.0.1' },
-    template: `def greet(name)
-  "Hello, #{name}!"
-end
-
-puts greet("Developer")
-`,
-  },
-  php: {
-    id: 'php',
-    label: 'PHP',
-    monaco: 'php',
-    piston: { language: 'php', version: '8.2.3' },
-    template: `<?php
-function greet($name) {
-    return "Hello, $name!";
-}
-echo greet("Developer") . PHP_EOL;
-`,
-  },
-  typescript: {
-    id: 'typescript',
-    label: 'TypeScript',
-    monaco: 'typescript',
-    piston: { language: 'typescript', version: '5.0.3' },
-    template: `function greet(name) {
-  return \`Hello, \${name}!\`;
-}
-
-console.log(greet("Developer"));
-`,
-  },
 };
 
 export const LANGUAGE_LIST = Object.values(LANGUAGES);
 
 export const FILE_EXTENSIONS = {
   javascript: 'js',
-  typescript: 'ts',
   python: 'py',
   java: 'java',
   cpp: 'cpp',
   c: 'c',
   csharp: 'cs',
   go: 'go',
-  ruby: 'rb',
-  php: 'php',
 };

@@ -1,14 +1,19 @@
 // Code execution client.
-// Uses the public Piston API (https://github.com/engineer-man/piston) which
-// runs each submission inside an isolated Docker container.
-// No API key, no setup needed.
+//
+// Uses the free CodeX API (https://github.com/Jaagrav/CodeX) which runs
+// each submission in an isolated Docker container on the server side.
+// No API key, no signup, no setup.
+//
+// You can override the endpoint at build time with:
+//   VITE_EXECUTION_API_URL=https://your-self-hosted-instance
 
 import axios from 'axios';
 
-const PISTON_API = 'https://emkc.org/api/v2/piston';
+const DEFAULT_API = 'https://api.codex.jaagrav.in';
+const API_URL = import.meta.env.VITE_EXECUTION_API_URL || DEFAULT_API;
 
 export async function runCode(language, source, stdin) {
-  if (!language.piston) {
+  if (!language.codex) {
     throw new Error(`Language "${language.label}" is not supported.`);
   }
 
@@ -17,14 +22,16 @@ export async function runCode(language, source, stdin) {
   let data;
   try {
     const response = await axios.post(
-      `${PISTON_API}/execute`,
+      API_URL,
       {
-        language: language.piston.language,
-        version: language.piston.version,
-        files: [{ name: 'main', content: source }],
-        stdin: stdin || '',
+        code: source,
+        language: language.codex,
+        input: stdin || '',
       },
-      { timeout: 30000 },
+      {
+        timeout: 30000,
+        headers: { 'Content-Type': 'application/json' },
+      },
     );
     data = response.data;
   } catch (err) {
@@ -32,26 +39,23 @@ export async function runCode(language, source, stdin) {
       throw new Error('Request timed out. The execution took too long.');
     }
     if (err.response) {
-      throw new Error(
-        `Backend returned ${err.response.status}: ${err.response.data?.message || err.message}`,
-      );
+      const msg = err.response.data?.error || err.response.data?.message || err.message;
+      throw new Error(`Backend returned ${err.response.status}: ${msg}`);
     }
     throw new Error(
       `Network error: ${err.message}. Check your internet connection.`,
     );
   }
 
-  const compileErr = data.compile?.stderr || '';
-  const runStdout = data.run?.stdout || '';
-  const runStderr = data.run?.stderr || '';
-  const exitCode = data.run?.code ?? 0;
-  const hasError = exitCode !== 0 || compileErr.length > 0;
+  // CodeX returns: { output, error, language, info, timeStamp }
+  const stdout = (data.output || '').toString();
+  const stderr = (data.error || '').toString();
+  const hasError = Boolean(stderr) && stderr.trim().length > 0;
 
   return {
-    stdout: runStdout,
-    stderr: [compileErr, runStderr].filter(Boolean).join('\n'),
+    stdout,
+    stderr,
     status: hasError ? 'error' : 'success',
     timeMs: Math.round(performance.now() - started),
-    exitCode,
   };
 }

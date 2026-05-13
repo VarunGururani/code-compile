@@ -1,12 +1,12 @@
 # Online Code Compiler
 
-A browser-based, multi-language code execution platform built with **React + Vite + JSX** and the **Monaco** editor. Code is executed in isolated Docker containers via the public **Piston API** - no setup, no Docker installation, no API keys required.
+A browser-based, multi-language code execution platform built with **React + Vite + JSX** and the **Monaco** editor. Code is executed in isolated Docker containers via the public **CodeX API** - no setup, no Docker installation, no API keys required.
 
 ## Features
 
 - **Rich editor** - Monaco editor with syntax highlighting, bracket matching, word wrap and keyboard shortcuts.
-- **10 languages** preconfigured: JavaScript, TypeScript, Python, Java, C, C++, C#, Go, Ruby, PHP.
-- **Real execution** - every Run sends your code to the Piston API which compiles and runs it inside a Docker sandbox and returns the output.
+- **7 languages** preconfigured: JavaScript, Python, Java, C, C++, C#, Go.
+- **Real execution** - every Run sends your code to the CodeX API which compiles and runs it inside a Docker sandbox and returns the output.
 - **Stdin support** for programs that read from standard input.
 - **Persistent state** - code per language, stdin and theme are stored in localStorage.
 - **Light / dark themes** and `Ctrl/Cmd + Enter` to run.
@@ -70,15 +70,17 @@ Visit http://localhost:8080.
 
 ```
 +-----------------+       HTTPS       +------------------------------+
-|  React Frontend |  --------------->  |  Piston API (emkc.org)       |
+|  React Frontend |  --------------->  |  CodeX API (api.codex...)    |
 |                 |                    |  Runs each program in a      |
-|  User clicks    |                    |  Docker container with       |
-|  "Run"          |  <---------------  |  CPU/memory/time limits      |
-|                 |  stdout / stderr   |  Returns JSON response       |
+|  User clicks    |                    |  Docker container            |
+|  "Run"          |  <---------------  |  Returns JSON response       |
+|                 |  output / error    |                              |
 +-----------------+                    +------------------------------+
 ```
 
-The Piston API is open source (https://github.com/engineer-man/piston). If you want to host your own instance, change the `PISTON_API` constant in `src/runner.js`.
+The CodeX API is open source (https://github.com/Jaagrav/CodeX). To use a
+different backend (e.g. your own self-hosted instance), set the env var
+`VITE_EXECUTION_API_URL` before building.
 
 ## CI / CD
 

@@ -168,7 +168,7 @@ export default function App() {
       <footer className="app-footer">
         <span>
           Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run. Code is executed in
-          isolated Docker sandboxes via the Piston API.
+          isolated Docker sandboxes on the server.
         </span>
       </footer>
     </div>
