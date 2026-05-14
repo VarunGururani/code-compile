@@ -1,102 +1,111 @@
 # Online Code Compiler
 
-A browser-based, multi-language code execution platform built with **React + Vite + JSX** and the **Monaco** editor. Code is executed in isolated containers via the **JDoodle Compiler API**.
+A browser-based, multi-language code execution platform built with **React + Vite + JSX** and the **Monaco** editor. Code is executed in isolated sandboxes via the **JDoodle Compiler API**.
+
+The app ships with two ways to run it:
+
+| Mode | Command | What it does |
+|------|---------|--------------|
+| **Dev** | `npm run dev` | Vite dev server (`localhost:5173`) with hot reload. The proxy is built into Vite. |
+| **Production / Docker** | `docker compose up` | Self-contained Node + Express container that serves the built React bundle and proxies JDoodle calls. |
+
+In both modes the JDoodle credentials are kept server-side. They never reach the browser.
 
 ## Features
 
-- **Rich editor** - Monaco editor with syntax highlighting, bracket matching, word wrap and keyboard shortcuts.
-- **9 languages** preconfigured: JavaScript, Python, Java, C, C++, C#, Go, Ruby, PHP.
-- **Real execution** - every Run sends your code to JDoodle's API which compiles and runs it server-side.
-- **Stdin support** for programs that read from standard input.
-- **Persistent state** - code per language, stdin and theme are stored in localStorage.
-- **Light / dark themes** and `Ctrl/Cmd + Enter` to run.
-- **Download as file**, reset-to-template, clear-output.
-- **Responsive layout** that collapses on small screens.
-- **Secrets stay server-side** - the Vite dev proxy injects the JDoodle credentials into outbound requests so they never appear in the browser bundle.
+- 9 languages preconfigured: JavaScript, Python, Java, C, C++, C#, Go, Ruby, PHP.
+- Monaco editor with syntax highlighting, word wrap, line numbers and `Ctrl/Cmd+Enter` to run.
+- Tabbed Output / Input pane with stdout / stderr coloring and run-time badge.
+- Light / dark themes, status bar (line/col, language, run time).
+- Persists code per language, theme and stdin in `localStorage`.
+- Multi-stage Dockerfile + docker-compose for one-command deployment.
+- GitHub Actions CI: build the bundle and the Docker image on every push.
 
-## Setup (one-time, ~2 minutes)
+## Getting started
 
-### 1. Get JDoodle API credentials (free)
+### 1. Get JDoodle credentials (free)
 
-1. Sign up at [https://www.jdoodle.com/compiler-api](https://www.jdoodle.com/compiler-api)
-2. Go to your dashboard - copy your **Client ID** and **Client Secret**
-3. Free tier: 200 executions per day (plenty for personal use)
+1. Sign up at [https://www.jdoodle.com/compiler-api](https://www.jdoodle.com/compiler-api).
+2. Copy your **Client ID** and **Client Secret** from the dashboard.
+3. Free tier: 200 executions per day.
 
-### 2. Install and configure
+### 2A. Run in dev mode
 
 ```bash
 git clone https://github.com/VarunGururani/code-compile.git
 cd code-compile
+
+# Create .env.local (next to package.json) with:
+#   JDOODLE_CLIENT_ID=...
+#   JDOODLE_CLIENT_SECRET=...
+cp .env.example .env.local
+
 npm install
-```
-
-Create a file named `.env.local` in the project root (next to `package.json`):
-
-```
-JDOODLE_CLIENT_ID=your-client-id-here
-JDOODLE_CLIENT_SECRET=your-client-secret-here
-```
-
-> Note: these env vars are NOT prefixed with `VITE_` on purpose. They are only read by the dev proxy on the server side and never leak into the browser bundle.
-
-### 3. Run
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) and run any language.
+Open [http://localhost:5173](http://localhost:5173).
+
+### 2B. Run in Docker (production-like)
+
+```bash
+# Create .env (next to docker-compose.yml) with the same two variables
+cp .env.example .env
+
+docker compose up --build
+```
+
+Open [http://localhost:8080](http://localhost:8080).
+
+To stop:
+```bash
+docker compose down
+```
+
+## Architecture
+
+```
+┌──────────────┐    POST /api/run    ┌─────────────────┐    POST + creds    ┌──────────────┐
+│   Browser    │ ─────────────────── │  Server (proxy) │ ─────────────────  │  JDoodle API │
+│  React app   │ ◄────── output ──── │                 │ ◄────── output ─── │  (Docker)    │
+└──────────────┘                     └─────────────────┘                    └──────────────┘
+                                       Vite middleware (dev)
+                                       Node/Express     (prod)
+```
+
+- **Browser** sends `{ script, stdin, language, versionIndex }` to a same-origin path.
+- **Server** (Vite middleware in dev, Express in the container) injects `clientId` / `clientSecret`, forwards to `https://api.jdoodle.com/v1/execute`, and pipes the response back.
+- **JDoodle** runs each submission inside an isolated Docker container on their side.
+- The browser bundle never sees the credentials.
 
 ## Project structure
 
 ```
 .
 |-- src/
-|   |-- components/         (Header, Toolbar, LanguageSelect, StdinPanel, OutputPanel)
-|   |-- styles/global.css   (IDE-like dark/light theme)
+|   |-- components/         (Header, Toolbar, LanguageSelect, SidePane, Icons)
+|   |-- styles/global.css
 |   |-- languages.js        (Language catalogue + JDoodle metadata)
-|   |-- runner.js           (HTTP client for the execution backend)
-|   |-- App.jsx             (Main shell)
-|   `-- main.jsx            (React entry point)
+|   |-- runner.js           (HTTP client for /api/run)
+|   |-- App.jsx
+|   `-- main.jsx
 |-- public/logo.svg
-|-- Dockerfile              (Multi-stage Node + nginx)
-|-- nginx.conf              (SPA fallback + gzip)
-|-- .github/workflows/ci.yml (GitHub Actions: build + Docker image)
-|-- vite.config.js          (Includes the JDoodle proxy)
+|-- server.js               (Production Express server: static + /api/run proxy)
+|-- vite.config.js          (Dev server with same /api/run proxy)
+|-- Dockerfile              (Multi-stage: Node builder -> Node runtime)
+|-- docker-compose.yml      (One-command run with .env)
+|-- .github/workflows/ci.yml (Build + Docker image on every push)
 `-- package.json
 ```
-
-## How execution works
-
-```
-+-----------------+              +---------------------+              +------------------+
-|  React Frontend |  POST        |  Vite dev proxy     |  POST        |  JDoodle API     |
-|  /api/run       |  --------->  |  injects clientId/  |  --------->  |  isolated runner |
-|  (browser)      |              |  clientSecret       |              |                  |
-|                 |  <---------  |                     |  <---------  |  output / error  |
-+-----------------+              +---------------------+              +------------------+
-```
-
-The browser only ever talks to `localhost:5173`, so there is no CORS issue and no secret in the bundle.
-
-## Production deployment
-
-The included `Dockerfile` builds a static bundle and serves it with nginx. **Important:** the Vite dev proxy only runs in development. For production you need a small backend that accepts POSTs, adds the credentials, and forwards them to JDoodle. Examples:
-
-- A serverless function (Vercel/Netlify/Cloudflare Workers)
-- A small Node/Express server
-- An nginx `location /api/run` block that adds the credentials
-
-If you only need this locally, the dev proxy is enough.
 
 ## CI / CD
 
 `.github/workflows/ci.yml` runs on every push and pull request:
 
-1. Installs dependencies with npm cache.
-2. Produces the production Vite bundle.
-3. Uploads the `dist/` artifact for 7 days.
-4. Builds the Docker image with Buildx and GitHub Actions cache.
+1. Installs dependencies.
+2. Builds the production Vite bundle.
+3. Uploads `dist/` as an artifact.
+4. Builds the Docker image with Buildx.
 
 ## License
 

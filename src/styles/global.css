@@ -134,10 +134,7 @@ pre {
   font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
-/* -----------------------------------------------------------------
- * App shell
- * ----------------------------------------------------------------- */
-
+/* App shell */
 .app {
   display: flex;
   flex-direction: column;
@@ -146,10 +143,7 @@ pre {
   gap: 14px;
 }
 
-/* -----------------------------------------------------------------
- * Header
- * ----------------------------------------------------------------- */
-
+/* Header */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -244,12 +238,8 @@ pre {
 }
 
 @keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(52, 211, 153, 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); }
+  50%      { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
 }
 
 .icon-btn {
@@ -276,10 +266,7 @@ pre {
   transform: scale(0.95);
 }
 
-/* -----------------------------------------------------------------
- * Main layout
- * ----------------------------------------------------------------- */
-
+/* Layout */
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
@@ -304,10 +291,7 @@ pre {
   gap: 10px;
 }
 
-/* -----------------------------------------------------------------
- * Editor controls
- * ----------------------------------------------------------------- */
-
+/* Editor controls */
 .editor-controls {
   display: flex;
   justify-content: space-between;
@@ -344,10 +328,7 @@ pre {
   z-index: 1;
 }
 
-/* -----------------------------------------------------------------
- * Language select
- * ----------------------------------------------------------------- */
-
+/* Language select */
 .language-select {
   display: flex;
   align-items: center;
@@ -379,19 +360,14 @@ pre {
   transition: all 0.15s ease;
 }
 
-.language-select select:hover {
-  border-color: var(--border-strong);
-}
+.language-select select:hover { border-color: var(--border-strong); }
 
 .language-select select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
-/* -----------------------------------------------------------------
- * Buttons / toolbar
- * ----------------------------------------------------------------- */
-
+/* Toolbar */
 .toolbar {
   display: flex;
   gap: 6px;
@@ -421,14 +397,8 @@ pre {
   background: var(--panel-3);
 }
 
-.btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn svg {
   width: 14px;
@@ -450,13 +420,9 @@ pre {
   transform: translateY(-1px);
 }
 
-.btn.primary:active:not(:disabled) {
-  transform: translateY(0);
-}
+.btn.primary:active:not(:disabled) { transform: translateY(0); }
 
-.btn.ghost {
-  background: transparent;
-}
+.btn.ghost { background: transparent; }
 
 .spinner {
   width: 13px;
@@ -467,16 +433,11 @@ pre {
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* -----------------------------------------------------------------
  * Side panel: tabbed input/output
  * ----------------------------------------------------------------- */
 
+/* Side pane */
 .side-pane {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -538,10 +499,6 @@ pre {
   padding: 1px 6px;
   border-radius: 999px;
   letter-spacing: 0;
-}
-
-.tab.active .badge {
-  background: var(--primary);
 }
 
 .status-badge {
@@ -613,9 +570,7 @@ pre {
   word-break: break-word;
 }
 
-.output-body .stdout {
-  color: var(--text);
-}
+.output-body .stdout { color: var(--text); }
 
 .output-body .stderr {
   color: var(--danger);
@@ -626,9 +581,7 @@ pre {
   margin-top: 6px;
 }
 
-.output-body .stdout + .stderr {
-  margin-top: 12px;
-}
+.output-body .stdout + .stderr { margin-top: 12px; }
 
 /* Empty state */
 .empty-state {
@@ -678,10 +631,7 @@ pre {
   border-top-color: var(--primary);
 }
 
-/* -----------------------------------------------------------------
- * Status bar (footer)
- * ----------------------------------------------------------------- */
-
+/* Status bar */
 .status-bar {
   display: flex;
   align-items: center;
@@ -734,10 +684,7 @@ pre {
   color: var(--primary);
 }
 
-/* -----------------------------------------------------------------
- * Toast / error banner
- * ----------------------------------------------------------------- */
-
+/* Error banner */
 .error-banner {
   background: rgba(248, 113, 113, 0.08);
   border: 1px solid rgba(248, 113, 113, 0.25);
@@ -759,17 +706,9 @@ pre {
   margin-top: 1px;
 }
 
-/* -----------------------------------------------------------------
- * Utilities
- * ----------------------------------------------------------------- */
-
-.muted {
-  color: var(--muted);
-}
-
-.small {
-  font-size: 12px;
-}
+/* Utilities */
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
 
 .sr-only {
   position: absolute;

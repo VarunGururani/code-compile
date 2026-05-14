@@ -48,13 +48,6 @@ export const TerminalIcon = (p) => (
   </svg>
 );
 
-export const ArrowRightIcon = (p) => (
-  <svg {...base} {...p}>
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
 export const SunIcon = (p) => (
   <svg {...base} {...p}>
     <circle cx="12" cy="12" r="4" />

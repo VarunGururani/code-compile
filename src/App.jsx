@@ -163,7 +163,8 @@ export default function App() {
               onMount={handleEditorMount}
               options={{
                 fontSize: 14,
-                fontFamily: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontFamily:
+                  "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
                 fontLigatures: false,
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
