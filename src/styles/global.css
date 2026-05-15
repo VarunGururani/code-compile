@@ -433,7 +433,9 @@ pre {
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+/* -----------------------------------------------------------------
+ * Side panel: tabbed input/output
+ * ----------------------------------------------------------------- */
 
 /* Side pane */
 .side-pane {
