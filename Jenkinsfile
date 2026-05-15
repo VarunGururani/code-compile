@@ -1,23 +1,31 @@
-// Jenkinsfile — Declarative Pipeline for Online Code Compiler
+// Jenkinsfile — CI/CD Pipeline for Online Code Compiler
 //
-// SIMPLEST POSSIBLE SETUP:
-// - No NodeJS plugin required
-// - No Docker plugin required
-// - Just needs Node.js installed on the Jenkins machine
-//   (download from https://nodejs.org and install)
+// Stages:
+// 1. Checkout code
+// 2. Install npm dependencies
+// 3. Build production bundle (vite)
+// 4. Build Docker image
+// 5. Push to Azure Container Registry
+// 6. Deploy to Azure App Service
 //
-// If you installed Node.js on your Windows machine, Jenkins
-// can use it directly since they share the same system.
+// Required: Azure CLI + Docker + Node.js installed on Jenkins machine
+// Required: Run 'az login' once on the Jenkins machine so Azure CLI is authenticated
 
 pipeline {
     agent any
 
     environment {
         NODE_ENV = 'production'
+        ACR_NAME = 'codecompileacr'
+        ACR_URL = 'codecompileacr.azurecr.io'
+        IMAGE_NAME = 'online-code-compiler'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        APP_NAME = 'code-compile-app'
+        RESOURCE_GROUP = 'code-compile-rg'
     }
 
     options {
-        timeout(time: 15, unit: 'MINUTES')
+        timeout(time: 20, unit: 'MINUTES')
         skipDefaultCheckout(false)
         disableConcurrentBuilds()
     }
@@ -50,14 +58,24 @@ pipeline {
         stage('Docker Build') {
             steps {
                 echo '--- Building Docker image ---'
-                bat 'docker build -t online-code-compiler:%BUILD_NUMBER% -t online-code-compiler:latest .'
+                bat "docker build -t %ACR_URL%/%IMAGE_NAME%:%IMAGE_TAG% -t %ACR_URL%/%IMAGE_NAME%:latest ."
             }
         }
 
-        stage('Verify') {
+        stage('Push to Azure') {
             steps {
-                echo '--- Verifying Docker image ---'
-                bat 'docker images online-code-compiler'
+                echo '--- Pushing image to Azure Container Registry ---'
+                bat "az acr login --name %ACR_NAME%"
+                bat "docker push %ACR_URL%/%IMAGE_NAME%:%IMAGE_TAG%"
+                bat "docker push %ACR_URL%/%IMAGE_NAME%:latest"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo '--- Deploying to Azure App Service ---'
+                bat "az webapp config container set --resource-group %RESOURCE_GROUP% --name %APP_NAME% --container-image-name %ACR_URL%/%IMAGE_NAME%:%IMAGE_TAG% --container-registry-url https://%ACR_URL%"
+                bat "az webapp restart --resource-group %RESOURCE_GROUP% --name %APP_NAME%"
             }
         }
 
@@ -66,6 +84,8 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
+            echo "Deployed: ${ACR_URL}/${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "Live at: https://${APP_NAME}.azurewebsites.net"
         }
         failure {
             echo 'Pipeline failed. Check the logs above.'
