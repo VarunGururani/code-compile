@@ -43,7 +43,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '--- Building production bundle ---'
-                bat 'npm run build'
+                bat 'npx vite build'
             }
         }
 
