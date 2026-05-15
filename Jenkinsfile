@@ -1,23 +1,19 @@
 // Jenkinsfile — Declarative Pipeline for Online Code Compiler
 //
-// Prerequisites on the Jenkins node:
-//   - Node.js 20 (via NodeJS plugin or installed globally)
-//   - Docker (for the Docker build stage)
+// SIMPLEST POSSIBLE SETUP:
+// - No NodeJS plugin required
+// - No Docker plugin required
+// - Just needs Node.js installed on the Jenkins machine
+//   (download from https://nodejs.org and install)
 //
-// If using the Jenkins "NodeJS" plugin, configure a NodeJS installation
-// named "Node20" in: Manage Jenkins → Tools → NodeJS installations.
+// If you installed Node.js on your Windows machine, Jenkins
+// can use it directly since they share the same system.
 
 pipeline {
     agent any
 
-    tools {
-        nodejs 'Node20'   // Must match the name configured in Jenkins Tools
-    }
-
     environment {
         NODE_ENV = 'production'
-        IMAGE_NAME = 'online-code-compiler'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
     options {
@@ -38,31 +34,30 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo '--- Installing npm packages ---'
-                sh 'node --version'
-                sh 'npm --version'
-                sh 'npm install --no-audit --no-fund'
+                bat 'node --version'
+                bat 'npm --version'
+                bat 'npm install --no-audit --no-fund'
             }
         }
 
         stage('Build') {
             steps {
                 echo '--- Building production bundle ---'
-                sh 'npm run build'
+                bat 'npm run build'
             }
         }
 
         stage('Docker Build') {
             steps {
                 echo '--- Building Docker image ---'
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+                bat 'docker build -t online-code-compiler:%BUILD_NUMBER% -t online-code-compiler:latest .'
             }
         }
 
-        stage('Verify Image') {
+        stage('Verify') {
             steps {
                 echo '--- Verifying Docker image ---'
-                sh "docker images ${IMAGE_NAME}"
-                sh "docker inspect ${IMAGE_NAME}:${IMAGE_TAG} --format='{{.Config.ExposedPorts}}'"
+                bat 'docker images online-code-compiler'
             }
         }
 
@@ -70,14 +65,12 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
-            echo "Image built: ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check the logs above.'
+            echo 'Pipeline failed. Check the logs above.'
         }
         always {
-            echo '--- Cleaning workspace ---'
             cleanWs()
         }
     }
