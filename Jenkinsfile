@@ -43,7 +43,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '--- Building production bundle ---'
-                bat 'npx vite build'
+                bat 'set PATH=%WORKSPACE%\\node_modules\\.bin;%PATH% && npm run build'
             }
         }
 
