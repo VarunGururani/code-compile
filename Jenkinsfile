@@ -1,17 +1,3 @@
-// Jenkinsfile — CI/CD Pipeline for Online Code Compiler
-//
-// Stages:
-// 1. Checkout code
-// 2. Install npm dependencies
-// 3. Build production bundle (vite)
-// 4. Build Docker image
-// 5. Deploy — stops old container, starts new one, website goes live
-//
-// Required: Docker + Node.js installed on Jenkins machine
-// Required: Create C:\jenkins-env\.env with:
-//   JDOODLE_CLIENT_ID=your-id
-//   JDOODLE_CLIENT_SECRET=your-secret
-
 pipeline {
     agent any
 
@@ -49,7 +35,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '--- Building production bundle ---'
-                bat 'node node_modules/vite/bin/vite.js build'
+                bat 'call node_modules\\.bin\\vite.cmd build'
             }
         }
 
