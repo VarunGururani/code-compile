@@ -49,7 +49,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '--- Building production bundle ---'
-                bat 'call node_modules\\.bin\\vite.cmd build'
+                bat 'node node_modules/vite/bin/vite.js build'
             }
         }
 
