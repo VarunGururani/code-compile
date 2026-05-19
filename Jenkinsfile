@@ -5,9 +5,12 @@
 // 2. Install npm dependencies
 // 3. Build production bundle (vite)
 // 4. Build Docker image
-// 5. Verify image
+// 5. Deploy — stops old container, starts new one, website goes live
 //
 // Required: Docker + Node.js installed on Jenkins machine
+// Required: Create C:\jenkins-env\.env with:
+//   JDOODLE_CLIENT_ID=your-id
+//   JDOODLE_CLIENT_SECRET=your-secret
 
 pipeline {
     agent any
@@ -16,6 +19,7 @@ pipeline {
         NODE_ENV = 'production'
         IMAGE_NAME = 'online-code-compiler'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
+        CONTAINER_NAME = 'code-compile'
     }
 
     options {
@@ -56,10 +60,19 @@ pipeline {
             }
         }
 
-        stage('Verify') {
+        stage('Deploy') {
             steps {
-                echo '--- Verifying Docker image ---'
-                bat "docker images %IMAGE_NAME%"
+                echo '--- Stopping old container (if running) ---'
+                bat "docker stop %CONTAINER_NAME% 2>nul & docker rm %CONTAINER_NAME% 2>nul & echo ready"
+
+                echo '--- Starting new container ---'
+                bat "docker run -d --name %CONTAINER_NAME% -p 8080:8080 --env-file C:\\jenkins-env\\.env --restart unless-stopped %IMAGE_NAME%:latest"
+
+                echo '--- Waiting for startup ---'
+                bat 'ping -n 5 127.0.0.1 >nul'
+
+                echo '--- Verifying container is running ---'
+                bat "docker ps --filter name=%CONTAINER_NAME%"
             }
         }
 
@@ -68,8 +81,7 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
-            echo "Image built: ${IMAGE_NAME}:${IMAGE_TAG}"
-            echo "Run with: docker run --rm -p 8080:8080 -e JDOODLE_CLIENT_ID=your-id -e JDOODLE_CLIENT_SECRET=your-secret ${IMAGE_NAME}:latest"
+            echo "Website is LIVE at: http://localhost:8080"
         }
         failure {
             echo 'Pipeline failed. Check the logs above.'
