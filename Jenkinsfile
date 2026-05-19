@@ -50,9 +50,6 @@ pipeline {
                 echo '--- Stopping and removing old container (if running) ---'
                 bat "docker rm -f %CONTAINER_NAME% 2>nul & echo ready"
 
-                echo '--- Releasing port 8080 from any conflicting containers ---'
-                bat "for /f \"tokens=*\" %%i in ('docker ps -q --filter \"publish=8080\"') do docker rm -f %%i"
-
                 echo '--- Starting new container ---'
                 bat "docker run -d --name %CONTAINER_NAME% -p 8080:8080 --env-file C:\\jenkins-env\\.env --restart unless-stopped %IMAGE_NAME%:latest"
 
